@@ -1,5 +1,4 @@
 # qucs_installer
----
 ## Description
 This is a script I created for a system restore procedure during a fresh install for an upgrade from Ubuntu 18.04 to Kubuntu 20.04.
 
@@ -16,9 +15,7 @@ Currently the script can successfully compile and install the basic Qucs applica
 
 The script includes the option to install dependencies and compile documentation but in its current state will fail.
 
----
 ## Usage
-
 ```
 chmod +x qucs.sh
 ```
@@ -34,7 +31,6 @@ This will prompt you with a series of questions but will not actually perform th
 ./qucs.sh debug
 ```
 
----
 ## Packages for Reference (installed automatically):
 <u>**ADMS Dependencies**</u>
 <pre>
@@ -80,7 +76,6 @@ This will prompt you with a series of questions but will not actually perform th
   python-tk
 </pre>
 
----
 ## Addons
 <pre>
 </pre>
