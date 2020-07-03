@@ -24,9 +24,7 @@ This will prompt you with a series of questions and perform the actions, making 
 <br>
 <u>**Debug:**</u>  
 This will prompt you with a series of questions but will not actually perform them. It will echo the command that would be run so you can do a dry run first.  
-```
-./qucs.sh debug
-```
+```./qucs.sh debug```
 
 ## Packages for Reference (installed automatically):
 <u>**ADMS Dependencies**</u>
