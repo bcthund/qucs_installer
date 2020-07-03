@@ -15,6 +15,9 @@ Currently the script can successfully compile and install the basic Qucs applica
 
 The script includes the option to install dependencies and compile documentation but in its current state will fail.
 
+See also:
+  * [fresh_install](https://github.com/bcthund/fresh_install)
+
 ## Usage
 ```chmod +x qucs.sh```  
 <br>
