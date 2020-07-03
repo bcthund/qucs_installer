@@ -16,14 +16,12 @@ Currently the script can successfully compile and install the basic Qucs applica
 The script includes the option to install dependencies and compile documentation but in its current state will fail.
 
 ## Usage
-```chmod +x qucs.sh```
-
+```chmod +x qucs.sh```  
+<br>
 <u>**Live run:**</u>  
 This will prompt you with a series of questions and perform the actions, making changes to your filesystem.  
-```
-./qucs.sh
-```
-<br><br>
+```./qucs.sh```  
+<br>
 <u>**Debug:**</u>  
 This will prompt you with a series of questions but will not actually perform them. It will echo the command that would be run so you can do a dry run first.  
 ```
