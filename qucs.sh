@@ -75,32 +75,37 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
          echo
          printf "${BLUE}Create Temp Directories${NC}\n"
          if [ -d "./src/qucs_tmp" ] ;then
-            printf "${BLUE}Temp directory already exists, remove first? ${NC}"
+            printf "${BLUE}Build directory already exists, remove first? ${NC}\n"
+            printf "${YELLOW}If you leave the directoy, it will be used as-is for building.${NC}\n"
+            printf "${BLUE}Remove Directory? ${NC}"
             read answer
             if [ "$answer" != "${answer#[Yy]}" ] ;then
                 cmd "sudo rm -rf ./src/qucs_tmp"
             fi
         fi
-        cmd "mkdir -pv ./src/qucs_tmp/adms/build"
-        cmd "mkdir -pv ./src/qucs_tmp/qucs/build"
 
     # Grab Source
-        echo
-        printf "${BLUE}Pull current ADMS source${NC}"
-        echo -n "${CYAN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-            cmd "git clone https://github.com/Qucs/ADMS.git ./src/qucs_tmp/adms/git"
-        else
-            cmd "ln -sr ./src/qucs-src/adms-2.3.6/ ./src/qucs_tmp/adms/git"
-        fi
-        
-        echo
-        printf "${BLUE}Pull current Qucs source${NC}"
-        echo -n "${CYAN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-            #cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/git"
-            cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/build"
-        else
-            #cmd "ln -sr ./src/qucs-src/qucs-0.0.20/ ./src/qucs_tmp/qucs/git"
-            cmd "cp --preserve=all -rT ./src/qucs-src/qucs-0.0.20 ./src/qucs_tmp/qucs/build"
+        if [ ! -d "./src/qucs_tmp" ] ;then
+            echo
+            printf "${BLUE}Pull current ADMS source${NC}"
+            echo -n "${CYAN} (y/n)? ${NC}"; read answer;
+            cmd "mkdir -pv ./src/qucs_tmp/adms/build"
+            cmd "mkdir -pv ./src/qucs_tmp/qucs/build"
+            if [ "$answer" != "${answer#[Yy]}" ] ;then
+                cmd "git clone https://github.com/Qucs/ADMS.git ./src/qucs_tmp/adms/git"
+            else
+                cmd "ln -sr ./src/qucs-src/adms-2.3.6/ ./src/qucs_tmp/adms/git"
+            fi
+            
+            echo
+            printf "${BLUE}Pull current Qucs source${NC}"
+            echo -n "${CYAN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+                #cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/git"
+                cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/build"
+            else
+                #cmd "ln -sr ./src/qucs-src/qucs-0.0.20/ ./src/qucs_tmp/qucs/git"
+                cmd "cp --preserve=all -rT ./src/qucs-src/qucs-0.0.20 ./src/qucs_tmp/qucs/build"
+            fi
         fi
 
     # ADMS: build and install
