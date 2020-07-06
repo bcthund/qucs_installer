@@ -32,6 +32,8 @@ ctrl_c() { echo; echo; exit 0; }
 trap ctrl_c INT
 
 echo
+printf "${YELLOW}WARNING! Compiling ADMS when the working directory has any spaces in it is known to fail.${NC}\n"
+echo
 echo -n "${PURPLE}Install qucs (y/n)? ${NC}"
 read answer
 echo
