@@ -72,50 +72,55 @@ trap ctrl_c INT
 echo -e
 printf "${YELLOW}WARNING! Compiling ADMS when the working directory has any spaces in it is known to fail.${NC}\n"
 echo -e
-echo -e -n "${PURPLE}Install qucs (y/n)? ${NC}"
+echo -e -n "${PURPLE}Install qucs (y/n/a)? ${NC}"
 read answer
 echo -e
 if [ "$answer" != "${answer#[Yy]}" ] ;then
+    if [ "$answer" != "${answer#[Aa]}" ] ;then answer2="y"; else answer2=""; fi
 
     # PPAs
         printf "${PURPLE}Source [Qucs]: ${BLUE}Add Additional PPAs${NC}"
-         echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "sudo add-apt-repository -y ppa:rock-core/qt4"
-         fi
+        fi
 
     # Dependencies
         echo -e
-         printf "${PURPLE}Source [Qucs]: ${BLUE}Install ADMS Dependencies${NC}"
-         echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Install ADMS Dependencies${NC}"
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "sudo apt install build-essential automake libtool gperf flex bison libxml2 libxml2-dev libxml-libxml-perl libgd-perl"
-         fi
-         
-         echo -e
-         printf "${PURPLE}Source [Qucs]: ${BLUE}Install QUCS Dependencies${NC}"
-         echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        fi
+        
+        echo -e
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Install QUCS Dependencies${NC}"
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             #libqtcore4 - might be needed to actually run if it compiles
             cmd "sudo apt install libqt4-dev libqt4-qt3support automake libtool libtool-bin gperf flex bison"
-         fi
+        fi
          
-         # Documentation is broken, requires missing packages that aren't easy to get back
-         #  octave-epstk
-         #  texlive-math-extra
-         #  pgf
-         echo -e
-         printf "${PURPLE}Source [Qucs]: ${BLUE}Install QUCS Documentation Dependencies${NC}"
-         echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-            cmd "sudo apt install doxygen octave octave-epstk latex2html texlive texlive-font-utils texlive-math-extra texlive-publishers texlive-science transfig gnuplot graphviz ps2eps pgf python-tk"
-         fi
+        # Documentation is broken, requires missing packages that aren't easy to get back
+        #  octave-epstk
+        #  texlive-math-extra
+        #  pgf
+        #echo -e
+        #printf "${PURPLE}Source [Qucs]: ${BLUE}Install QUCS Documentation Dependencies${NC}"
+        #if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        #if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+        #    cmd "sudo apt install doxygen octave octave-epstk latex2html texlive texlive-font-utils texlive-math-extra texlive-publishers texlive-science transfig gnuplot graphviz ps2eps pgf python-tk"
+        #fi
 
     # Create Directories
-         echo -e
-         printf "${PURPLE}Source [Qucs]: ${BLUE}Create Temp Directories${NC}\n"
-         if [ -d "./src/qucs_tmp" ] ;then
+        echo -e
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Create Temp Directories${NC}\n"
+        if [ -d "./src/qucs_tmp" ] ;then
             printf "${BLUE}Build directory already exists, remove first? ${NC}\n"
             printf "${YELLOW}If you leave the directoy, it will be used as-is for building.${NC}\n"
-            printf "${BLUE}Remove Directory? ${NC}"
-            read answer
-            if [ "$answer" != "${answer#[Yy]}" ] ;then
+            printf "${BLUE}Remove Directory${NC}"
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "sudo rm -rf ./src/qucs_tmp"
             fi
         fi
@@ -123,24 +128,16 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
     # Grab Source
         if [ ! -d "./src/qucs_tmp" ] ;then
             echo -e
-            printf "${PURPLE}Source [Qucs]: ${BLUE}Pull current ADMS source${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer;
+            echo -e -n "${PURPLE}Source [Qucs]: ${BLUE}Use provided source snapshot${NC}"
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
             cmd "mkdir -pv ./src/qucs_tmp/adms/build"
             cmd "mkdir -pv ./src/qucs_tmp/qucs/build"
-            if [ "$answer" != "${answer#[Yy]}" ] ;then
-                cmd "git clone https://github.com/Qucs/ADMS.git ./src/qucs_tmp/adms/git"
-            else
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "ln -sr ./src/qucs-src/adms-2.3.6/ ./src/qucs_tmp/adms/git"
-            fi
-            
-            echo -e
-            printf "${PURPLE}Source [Qucs]: ${BLUE}Pull current Qucs source${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-                #cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/git"
-                cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/build"
-            else
-                #cmd "ln -sr ./src/qucs-src/qucs-0.0.20/ ./src/qucs_tmp/qucs/git"
                 cmd "cp --preserve=all -rT ./src/qucs-src/qucs-0.0.20 ./src/qucs_tmp/qucs/build"
+            else
+                cmd "git clone https://github.com/Qucs/ADMS.git ./src/qucs_tmp/adms/git"
+                cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/build"
             fi
         fi
 
@@ -157,35 +154,32 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
             echo -e;
             exit 0;
         }
-        
-#         echo -e
-#         printf "${BLUE}ADMS: Run 'cmake'${NC}"
-#         echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-#             cmd "cmake ../git/ -DCMAKE_INSTALL_PREFIX=[/install/location/]"
-#             cmd "cmake ../git/"
-#         fi
 
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: configure${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "../git/configure"
         fi
         
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: make${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "make"
         fi
         
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: Run 'make install'${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "sudo make install"
         fi
         
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: Run 'ldconfig'${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "sudo ldconfig"
         fi
         
@@ -211,30 +205,35 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
         
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: bootstrap${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "./bootstrap"
         fi
         
     # Compile qucs-core tools only:
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-core${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "cd qucs-core"
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-core: configure${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "./configure"
             fi
             
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-core: make${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "make"
             fi
             
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-core: make install${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "sudo make install"
             fi
             
@@ -245,23 +244,27 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
     # Compile Qucs GUI tools only:
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-gui${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "cd qucs"
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-gui: configure${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "./configure"
             fi
             
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-gui: make${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "make"
             fi
             
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-gui: make install${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "sudo make install"
             fi
             
@@ -269,57 +272,66 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
         fi
         
     # Compile qucs-doc documentation only:
-        echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-            cmd "cd qucs-doc"
-            echo -e
-            printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc: configure${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-                cmd "./configure"
-            fi
-            
-            echo -e
-            printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc: make${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-                cmd "make"
-            fi
-            
-            echo -e
-            printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc: make install${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-                cmd "sudo make install"
-            fi
-            
-            cmd "cd .."
-        fi
+#         echo -e
+#         printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc${NC}"
+#         if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+#         if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+#             cmd "cd qucs-doc"
+#             echo -e
+#             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc: configure${NC}"
+#             if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+#             if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+#                 cmd "./configure"
+#             fi
+#             
+#             echo -e
+#             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc: make${NC}"
+#             if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+#             if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+#                 cmd "make"
+#             fi
+#             
+#             echo -e
+#             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs-doc: make install${NC}"
+#             if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+#             if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+#                 cmd "sudo make install"
+#             fi
+#             
+#             cmd "cd .."
+#         fi
         
     # Bootstrap and build everything
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs ALL${NC}"
-        echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then       
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             cmd "cd qucs"
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: configure${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-                echo -e
-                printf "${PURPLE}Source [Qucs]: ${BLUE}Enable documentation${NC}"
-                echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
-                    cmd "./configure"
-                else
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+                #echo -e
+                #printf "${PURPLE}Source [Qucs]: ${BLUE}Enable documentation${NC}"
+                #if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+                #if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+                #    cmd "./configure"
+                #else
                     cmd "./configure --disable-doc"
-                fi
+                #fi
             fi
             
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: make${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "make"
             fi
             
             echo -e
             printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: make install${NC}"
-            echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
                 cmd "sudo make install"
             fi
             
@@ -339,11 +351,12 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
 
         
     # Removing build files
-         echo -e
-         printf "${PURPLE}Source [Qucs]: ${BLUE}Remove './src/qucs_tmp'${NC}"
-         echo -e -n "${GREEN} (y/n)? ${NC}"; read answer; if [ "$answer" != "${answer#[Yy]}" ] ;then
+        echo -e
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Remove './src/qucs_tmp'${NC}"
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
              cmd "sudo rm -rf ./src/qucs_tmp";
-         fi
+        fi
         
 
     # ======================
