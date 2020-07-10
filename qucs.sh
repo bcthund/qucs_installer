@@ -96,7 +96,7 @@ if [ "$answer" != "${answer#[YyAa]}" ] ;then
         printf "${PURPLE}Source [Qucs]: ${BLUE}Install ADMS Dependencies${NC}"
         if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
         if [ "$answer2" != "${answer2#[Yy]}" ] ;then
-            cmd "sudo apt install build-essential automake libtool gperf flex bison libxml2 libxml2-dev libxml-libxml-perl libgd-perl"
+            cmd "printf '%s\n' y | sudo apt install build-essential automake libtool gperf flex bison libxml2 libxml2-dev libxml-libxml-perl libgd-perl"
         fi
         
         echo -e
@@ -104,7 +104,7 @@ if [ "$answer" != "${answer#[YyAa]}" ] ;then
         if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
         if [ "$answer2" != "${answer2#[Yy]}" ] ;then
             #libqtcore4 - might be needed to actually run if it compiles
-            cmd "sudo apt install libqt4-dev libqt4-qt3support automake libtool libtool-bin gperf flex bison"
+            cmd "printf '%s\n' y | sudo apt install libqt4-dev libqt4-qt3support automake libtool libtool-bin gperf flex bison"
         fi
          
         # Documentation is broken, requires missing packages that aren't easy to get back
