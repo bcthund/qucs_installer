@@ -24,6 +24,9 @@ working_dir=$PWD
 DEBUG=false
 VERBOSE=false
 IN_TESTING=false
+EXTRACT=true
+TMP_DIR=""
+SRC_DIR=""
 FLAGS=""
 OTHER_ARGUMENTS=""
 
@@ -54,8 +57,15 @@ do
         echo -e "  -v, --verbose         print commands being run before running them"
         echo -e "  -d, --debug           print commands to be run but do not execute them"
         echo -e "  --in-testing          Enable use of in-testing features"
+        #echo -e "  --tmp=DIRECTORY       not used, passed from fresh_install script"
         echo -e "${NC}"
         exit
+        shift # Remove from processing
+        ;;
+        --tmp=*)
+        EXTRACT=false
+        TMP_DIR="$(echo ${arg#*=} | sed 's:/*$::')"
+        FLAGS="$FLAGS--tmp=${TMP_DIR} "
         shift # Remove from processing
         ;;
         *)
@@ -121,46 +131,41 @@ if [ "$answer" != "${answer#[YyAa]}" ] ;then
 
     # Create Directories
         echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}Create Temp Directories${NC}\n"
-        if [ -d "./src/qucs_tmp" ] ;then
-            printf "${BLUE}Build directory already exists, remove first? ${NC}\n"
-            printf "${YELLOW}If you leave the directoy, it will be used as-is for building.${NC}\n"
-            printf "${BLUE}Remove Directory${NC}"
-            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
-            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
-                cmd "sudo rm -rf ./src/qucs_tmp"
+        printf "${BLUE}Create Temp Directory${NC}\n"
+        SRC_DIR=$(mktemp -d -t qucs-XXXXXX)
+        ctrl_c() {
+            cmd "cd '${working_dir}'"
+            echo -e;
+            echo -e -n "${BLUE}Do you want to remove temporary files in '${SRC_DIR}' ${GREEN}(y/n)? ${NC}"; read -e -i "y" answer; echo;
+            if [ "$answer" != "${answer#[Yy]}" ] ;then
+                eval "sudo rm -rf ${SRC_DIR}";
             fi
-        fi
+            echo -e;
+            echo -e;
+            exit 0;
+        }
+        echo -e "${YELLOW}Temp directory: '${SRC_DIR}'${NC}"
 
     # Grab Source
-        if [ ! -d "./src/qucs_tmp" ] ;then
-            echo -e
-            echo -e -n "${PURPLE}Source [Qucs]: ${BLUE}Use provided source snapshot${NC}"
-            if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
-            cmd "mkdir -pv ./src/qucs_tmp/adms/build"
-            cmd "mkdir -pv ./src/qucs_tmp/qucs/build"
-            if [ "$answer2" != "${answer2#[Yy]}" ] ;then
-                cmd "ln -sr ./src/qucs-src/adms-2.3.6/ ./src/qucs_tmp/adms/git"
-                cmd "cp --preserve=all -rT ./src/qucs-src/qucs-0.0.20 ./src/qucs_tmp/qucs/build"
-            else
-                cmd "git clone https://github.com/Qucs/ADMS.git ./src/qucs_tmp/adms/git"
-                cmd "git clone https://github.com/Qucs/qucs.git ./src/qucs_tmp/qucs/build"
-            fi
+        echo -e
+        echo -e -n "${PURPLE}Source [Qucs]: ${BLUE}Use provided source snapshot${NC}"
+        if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
+        cmd "mkdir -pv ${SRC_DIR}/adms/build"
+        cmd "mkdir -pv ${SRC_DIR}/qucs/build"
+        if [ "$answer2" != "${answer2#[Yy]}" ] ;then
+            cmd "ln -sr ./src/qucs-src/adms-2.3.6/ ${SRC_DIR}/adms/git"
+            cmd "cp --preserve=all -rT ./src/qucs-src/qucs-0.0.20 ${SRC_DIR}/qucs/build"
+        else
+            cmd "git clone https://github.com/Qucs/ADMS.git ${SRC_DIR}/adms/git"
+            cmd "git clone https://github.com/Qucs/qucs.git ${SRC_DIR}/qucs/build"
         fi
 
     # ADMS: build and install
         echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: Entering './src/qucs_tmp/adms/build'${NC}\n"
-        cmd "cd ./src/qucs_tmp/adms/build"
+        printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: Entering '${SRC_DIR}/adms/build'${NC}\n"
+        cmd "cd ${SRC_DIR}/adms/build"
         cmd "echo -e $PWD"
         cmd "ls -al"
-        ctrl_c() {
-            echo -e;
-            cmd "cd '${working_dir}'";
-            cmd "sudo rm -rf ./src/qucs_tmp";
-            echo -e;
-            exit 0;
-        }
 
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: configure${NC}"
@@ -191,24 +196,16 @@ if [ "$answer" != "${answer#[YyAa]}" ] ;then
         fi
         
         echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: Leaving './src/qucs_tmp/adms/build'${NC}\n"
+        printf "${PURPLE}Source [Qucs]: ${BLUE}ADMS: Leaving '${SRC_DIR}/adms/build'${NC}\n"
         cmd "cd '${working_dir}'";
-        ctrl_c() { echo -e; echo -e; exit 0; }
 
         
     # QUCS: build and install
         echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: Entering './src/qucs_tmp/qucs/build'${NC}\n"
-        cmd "cd ./src/qucs_tmp/qucs/build/"
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: Entering '${SRC_DIR}/qucs/build'${NC}\n"
+        cmd "cd ${SRC_DIR}/qucs/build/"
         cmd "echo -e $PWD"
         cmd "ls -al"
-        ctrl_c() {
-            echo -e;
-            cmd "cd '${working_dir}'";
-            cmd "sudo rm -rf ./src/qucs_tmp";
-            echo -e;
-            exit 0;
-        }
         
         echo -e
         printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: bootstrap${NC}"
@@ -347,22 +344,16 @@ if [ "$answer" != "${answer#[YyAa]}" ] ;then
         
         
         echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: Leaving './src/qucs_tmp/qucs/build'${NC}\n"
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Qucs: Leaving '${SRC_DIR}/qucs/build'${NC}\n"
         cmd "cd '${working_dir}'";
-        ctrl_c() {
-            echo -e;
-            cmd "sudo rm -rf ./src/qucs_tmp";
-            echo -e;
-            exit 0;
-        }
 
         
     # Removing build files
         echo -e
-        printf "${PURPLE}Source [Qucs]: ${BLUE}Remove './src/qucs_tmp'${NC}"
+        printf "${PURPLE}Source [Qucs]: ${BLUE}Remove '${SRC_DIR}'${NC}"
         if [ "$answer" != "${answer#[Yy]}" ] ;then printf " ${GREEN}(y/n)? ${NC} "; read answer2; else echo; fi
         if [ "$answer2" != "${answer2#[Yy]}" ] ;then
-             cmd "sudo rm -rf ./src/qucs_tmp";
+             cmd "sudo rm -rf ${SRC_DIR}";
         fi
         
 
